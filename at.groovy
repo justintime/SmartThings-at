@@ -14,29 +14,18 @@ definition(
     iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 
 preferences {
-  section("labels"){
-    label(name: "joblabel",
-          title: "Job Name",
-          required: true,
-          multiple: false
-    )
-  }
 
-  section("Turn these switch(es)...") {
+  section("Job Definition") {
     input "switches", "capability.switch", 
-    multiple: true, 
-    title: "Which...", 
-    required: true
-  }
+      multiple: true, 
+      title: "Operate on these switches:", 
+      required: true
 
-  section("On or Off...") {
-    input "operation" "enum",
-    title: "Turn it on or off?",
-    options: ["On","Off"]
-  }
+    input "operation", "enum",
+      title: "Turn them on or off?",
+      options: ["On","Off"]
 
-  section("When?") {
-  	input "schedule", "time",
+    input "schedule", "time",
       title: "When should the job run?",
       required: true
   }
@@ -50,15 +39,17 @@ def installed() {
 def updated() {
   log.debug "Updated with settings: ${settings}"
 
-  unsubscribe()
+  unschedule("handler")
   initialize()
 }
 
 def initialize() {
-  runOnce(schedule, handler, [overwrite: false])
+  log.debug "Scheduling turning ${operation} switches"
+  runOnce(schedule, handler)
 }
 
 def handler() {
+  log.debug "Turning ${operation} switches"
   switch(operation) {
     case 'On':
       switches.on()
